@@ -1,0 +1,544 @@
+\documentclass[letterpaper,12pt]{report} 
+\newcommand{\TheTitle}{DAIR$^3$}
+\newcommand{\TheSubtitle}{2026 Data Challenge: Vital Statistics} 
+\newcommand{\TheAuthor}{Juan B. Guti\'errez}  
+\newcommand{\ThePageCount}{39}
+\newcommand{\TheDate}{May-June, 2026}  
+\newcommand{\TheObsolescenceDate}{August 31, 2026}  
+%-----------------------------
+% Configure instance type
+\newcommand{\CLASSROOM}{1} 
+\newcommand{\DATATHON}{2} 
+\newcommand{\DocVersion}{\DATATHON} % 1 = classroom, 2 = datathon
+%-----------------------------
+\include{DAIR3Config}
+
+\begin{document}
+	\input{DAIR3FrontMatter}
+	\setcounter{page}{1}
+	\tableofcontents \newpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{2022 Data Challenge - Vital Statistics}  \newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%================================================================
+\section{Problem Description}\label{sec:Problem}
+%================================================================
+Your team is part of a consultancy supporting a planning commission for the State of Texas.  The commission is planning budgetary requirements for various State services in 2030.  The commission requests the following:
+\begin{itemize}
+	\item Projections of underweight newborns by county in Texas. The CDC offers a data table of infant weight for age, available at: \\ \href{https://www.cdc.gov/growthcharts/html_charts/wtageinf.htm}{https://www.cdc.gov/growthcharts/html\_charts/wtageinf.htm} \\ You can extract from this table the information related to weight at birth.
+	\item Projections of newborn mortality by county in Texas. According to the CDC, a stillbirth is classified as either early, late, or term. An early stillbirth is a fetal death occurring between 20 and 27 completed weeks of pregnancy. A late stillbirth occurs between 28 and 36 completed pregnancy weeks. A term stillbirth occurs between 37 or more completed pregnancy weeks. 
+	\item Identification of the socioeconomic factors associated with these two outcomes. 
+	\item Comparison to other states. 
+\end{itemize}
+
+Your team will produce an executive report accompanied by an appendix of technical material.  
+
+%================================================================
+\section{Data Description}
+%================================================================
+The commission has approved specific data sources for this analysis. You can only use approved data available at \href{https://drive.google.com/drive/folders/1oq2yuKgBPOAp4wwRngMAI5b_tvVDlNvm}{this hyperlink}.
+
+\textbf{National Center for Health Statistics (NCHS)}: Since 1969, all births recorded in the US are available as digital records from the NCHS, from the Centers for Disease Control and Prevention (CDC). The date and time of birth is publicly available only between 1969 and 1988; starting in 1989, only the week of birth is recorded. %Why is the date and time of birth no longer recorded? %\QA
+The NCHS keeps records of place of birth, assistance during delivery (at home, with doctors, with midwives), level of education of the parents, place of residence, weight at birth, number of weeks of gestation, number of siblings, birth order, etc. In total, over 100 variables are recorded. You have access to records form 1969 to 1988. 
+
+\textbf{Surveillance, Epidemiology, and End Results Program (SEER)}: The U.S. Census Bureau annually releases unabridged population estimates for five-year age groups and race at the county level. The Census Bureau does not release bridged race estimates by single year of age at the county level due to concerns about the reliability of these estimates. However, these estimates are provided to the National Cancer Institute through SEER to meet programmatic needs such as the creation of age groupings that differ from the standard groupings used by the Census Bureau. Users of the single-year-of-age county-level interpolated race population estimates should carefully consider the limited reliability of these estimates. County-level population files with 19 age groups (<1, 1-4, ..., 80-84, 85+) and with 86 single-year age groups (<1, 1, 2, ..., 84, 85+) are provided.  
+
+\textbf{Socioeconomic Data and Applications Center (SEDAC)}: SEDAC, the Socioeconomic Data and Applications Center, is one of the Distributed Active Archive Centers (DAACs) in the Earth Observing System Data and Information System (EOSDIS) of the U.S. National Aeronautics and Space Administration (NASA). SEDAC contains georeferenced U.S. county-level population projections, total and by sex, race and age, based on shared socioeconomic pathways (SSPs). This data set, produced by Mathew E. Hauer, consists of county-level population projection scenarios of population in five-year intervals for all U.S. counties for the period 2020 - 2100. Obtain the data description from \href{https://doi.org/10.1038/sdata.2019.5}{https://doi.org/10.1038/sdata.2019.5}. 
+
+The NCHS data set covers from 1969 through 1986; it provides individual birth data. The SEER data set provides age-bracketed population estimates from 1969 to 2020. Since for this exercise we do not have birth data beyond 1986, you will have to use the SEER data to infer births in the period 1987-2020; alternatively, you could go to the NCHS source and obtain more recent data, however the NCHS data is complex and downloading additional years is not advised in the short time available to complete the Rowdy Datathon (but we will not stop you). The SEDAC data has total population estimates per county from 2020 through 2100 categorized in four ethnicities: Hispanic, white, black, and other. A viable sequence of analysis is NCHS $\rightarrow$ SEER $\rightarrow$ SEDAC.  
+
+% Table generated by Excel2LaTeX from sheet 'Sheet1'
+\begin{table}[htbp]
+  \centering
+  \caption{File sizes. If you have limited storage, plan your analysis in stages.}
+    \begin{tabular}{|l|r|l|l|}
+    \toprule
+    DATA SET & \multicolumn{1}{l|}{FILE} & ZIPPED & UNZIPPED \\
+    \midrule
+    NCHS  & \multicolumn{1}{l|}{US1969-1986.zip} & 2.7 GB & 22.8 GB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{natalityConfBackup\_PostgreSQL.sql} & 2.42 GB & 25 GB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{US1969.zip} & 32.6 MB & 381 MB \\
+    \midrule
+    SEDAC & \multicolumn{1}{l|}{hauer\_county\_NH\_pop\_SSPs.xlsx} & N/A   & 15.1 MB \\
+    \midrule
+    SEER  & \multicolumn{1}{l|}{SEER Data Dictionary.pdf} &       & 73 KB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{tx.1969\_2020.19ages.adjusted.txt.gz} & 5.3 MB & 35 MB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{tx.1969\_2020.singleages.adjusted.txt.gz} & 18.8 BM & 19 MB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{tx.1990\_2020.19ages.adjusted.txt.gz} & 6.5 MB & 6 MB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{tx.1990\_2020.singleages.adjusted.txt.gz} & 20.9 MB & 21 MB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{us.1969\_2020.19ages.adjusted.txt.gz} & 66.7 MB & 430 MB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{us.1969\_2020.singleages.adjusted.txt.gz} & 238.8 MB & 1.6 GB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{us.1990\_2020.19ages.adjusted.txt.gz} & 76.7 MB & 520 MB \\
+\cmidrule{2-4}          & \multicolumn{1}{l|}{us.1990\_2020.singleages.adjusted.txt.gz} & 246.3 MB & 1.8 GB \\
+    \midrule
+    TOTAL  &       & 5.7 GB & 52 GB \\
+    \bottomrule
+    \end{tabular}%
+  \label{tab:addlabel}%
+\end{table}%
+
+%================================================================
+\section{Criteria}
+%================================================================
+Results will be evaluated according to requirements set by the commission:
+\begin{itemize}
+	\item \textbf{Compelling presentation}: You must enable the commission to share your numerical and graphical results directly with legislators and citizens through executive summaries. This lay audience should find your summaries and implications to be understandable and convincing.  Express your results in ways that can be acted on to plan e.g. funding of schools, care for the elderly, etc. The supporting documentation can be technical.  
+	\item \textbf{Analysis comprehension}: Before a single line of code is written, before a single byte of raw data is processed, you must be able to tell the story of what is the progression of steps that will be undertaken in analysis.
+	\item \textbf{Sound technical methods}: You may cite the analyses of others, but the commission wants to see the methods that you have invented or adopted to calculate these projections (which should be accompanied by error bars, if possible).  The commision must have confidence in your results in order to present those results to others.
+	\item \textbf{Awareness of the data context}: All data have bias. Before, during and after analysis, it is essential to identify biases in the data and articulate clearly how these biases influence all steps of analysis and interpretation.
+	\item \textbf{Reproducible results}: You must enable the commission to have your results confirmed by an independent team.  That is, enable the independent team to replicate your results by describing your data and methods in detail.
+\end{itemize}
+
+% Table generated by Excel2LaTeX from sheet 'Sheet3'
+\begin{table}[htbp]
+  \centering
+  \caption{Evaluation Criteria}
+    \begin{tabular}{|p{22em}|r|}
+    \toprule
+    \textbf{CRITERION} & \multicolumn{1}{p{8em}|}{\textbf{\% WEIGHT}} \\
+    \midrule
+    1. Compelling presentation - Informative & 10\% \\
+    \midrule
+    2. Compelling presentation - Understandable & 10\% \\
+    \midrule
+    3. Analysis comprehension & 20\% \\
+    \midrule
+    4. Sound technical methods & 20\% \\
+    \midrule
+    5. Awareness of the data context & 20\% \\
+    \midrule
+    6. Reproducible results & 20\% \\
+    \bottomrule
+    \end{tabular}%
+  \label{tab:addlabel}%
+\end{table}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Analysis Activities}  \newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%--------------------------------------------
+\section{A single year of vital statistics}
+%--------------------------------------------
+
+A problem most people can relate to is demography. Millions of people are born in the US every year. Recording birth events is necessary for legal matters such as obtaining a driver’s license or other forms of government-issued identification. However, recording, keeping, and using this information has challenges that exemplify many aspects of data analysis, as this exercise will demonstrate.
+
+Since 1969, all births recorded in the US are available as digital records from the National Center for Health Statistics (NCHS) from the Centers for Disease Control and Prevention (CDC). Only between 1969 and 1988 the date and time of birth is publicly available; starting on 1989, only the week of birth is recorded. Why is the date and time of birth no longer recorded? \QA
+
+
+The NCHS keeps records of place of birth, assistance during delivery (at home, with doctors, with midwives), level of education of the parents, place of residence, weight at birth, number of weeks of gestation, number of siblings, birth order, etc. In total, over 100 variables are recorded.
+
+I have made available two files for you: a compressed file with birth records from 1969, and a data dictionary. The uncompressed data file is about 380 MB in size. The data is contained in a “flat file”. This means that every line of text in this file is a continuous chain of characters. We must extract information from this type of files with a “dictionary” that tells us the beginning and ending columns of a given variable. Why was this format used? \QA
+
+
+Please answer the following questions:
+\begin{enumerate}
+	\item How many live births occurred in Texas in 1969 from mothers residing in Texas?	
+	\begin{itemize}
+		\item Bonus question: How would you visualize births from each state with respect to every other state?
+	\end{itemize}
+	\item Show graphically how the level of education of the mother is related to the birth order (1st born, second child, third, etc.)	
+	\begin{itemize}
+		\item Bonus question: How would you visualize each variable with respect to every other variable?
+	\end{itemize}
+\end{enumerate}
+
+It is possible that you might not know how to answer some of these questions on first contact with this problem. As a senior undergraduate or beginning graduate student, you are expected to figure things out and solve new problems to which you have not been previously exposed... which involves reading, and asking questions to your peers and instructors.
+A common approach to extract information from flat files is by importing it into Excel. The ``\textit{Text Import Wizard}'' would guide you through the process of identifying variables by column. However, this results in a problem. Describe it. \QA
+
+\begin{figure}
+	\centering
+		\includegraphics{Excel.png}
+	\caption{Excel's Import Wizard}
+	\label{fig:Excel}
+\end{figure}
+
+A simple program that can help you explore this file is 
+
+\BeginCode
+f = open("US1969.dat", "r", encoding="cp1252")
+counter = 0;
+for x in f:
+    if x[25] == "7" and x[26] ==  "4": # other conditions? 
+        counter = counter + 1
+print(counter)
+\end{verbatim}
+\EndCode 
+
+The instruction \textit{encoding=``cp1252"} is necessary in non-Windows systems due the presence of single-byte character encoding of the Latin alphabet, used by default in the legacy components of Microsoft Windows for English and many European languages including Spanish, French, and German. If you remove this instruction, the following error might show up in non-Windows operating systems: ``'utf-8' codec can't decode byte...''
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Analysis Activities}  \newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%================================================================
+\section{Unit 1: Responsible Conduct of Research and Ethics}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Analyze the sociotechnical system of biomedical data science
+    \item Differentiate between traditional bioethical, sociotechnical, and other ethical approaches
+    \item Identify ethical issues in secondary use of vital statistics data
+\end{itemize}
+
+\subsection{Activities}
+
+\subsubsection{1.1 Ethical Considerations in Vital Statistics Analysis}
+Consider the NCHS vital statistics data you will be analyzing:
+\begin{enumerate}
+    \item Why is the date and time of birth no longer recorded after 1988, only the week of birth? Discuss privacy implications. \QA
+    \item Identify at least three ethical concerns when projecting underweight newborns and infant mortality by county. Consider:
+    \begin{itemize}
+        \item Stigmatization of specific counties or populations
+        \item Secondary use of data originally collected for other purposes
+        \item Potential biases in historical data collection
+    \end{itemize}
+    \item Develop a stakeholder engagement strategy for presenting your findings to affected communities
+    \item Write a brief anticipatory governance framework for how your projections might be used by policymakers
+\end{enumerate}
+
+%================================================================
+\section{Unit 2: Data Management, Representation, and Sharing}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Understand data management principles and metadata requirements
+    \item Choose appropriate data representations for analysis tasks
+    \item Apply FAIR principles to data sharing
+\end{itemize}
+
+\subsection{Activities}
+
+\subsubsection{2.1 Data Management - Understanding the NCHS Dataset}
+\begin{enumerate}
+    \item Document the metadata for the NCHS vital statistics:
+    \begin{itemize}
+        \item List 5 critical metadata categories needed to reproduce your findings
+        \item Create a data dictionary for the key variables you will use
+        \item Explain why the data was stored in "flat file" format. What are the advantages and disadvantages? \QA
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{2.2 Data Representation Choices}
+\begin{enumerate}
+    \item The NCHS data is provided as a flat file with over 100 variables. Design three different representations:
+    \begin{itemize}
+        \item A relational database schema (tables and relationships)
+        \item A document-oriented (NoSQL) structure
+        \item A graph database representation
+    \end{itemize}
+    \item For each representation, identify which analyses become easier or harder
+    \item Implement your relational design using the PostgreSQL import process described
+\end{enumerate}
+
+\subsubsection{2.3 From CSV to PostgreSQL Implementation}
+[Keep existing PostgreSQL section from original document]
+
+\subsubsection{2.4 Data Sharing Plan}
+\begin{enumerate}
+    \item Create a 2-page Data Management and Sharing Plan following NIH requirements for your analysis results
+    \item Apply FAIR principles to your processed datasets:
+    \begin{itemize}
+        \item Findable: Assign persistent identifiers
+        \item Accessible: Define access protocols
+        \item Interoperable: Use standard vocabularies
+        \item Reusable: Document provenance and license
+    \end{itemize}
+\end{enumerate}
+
+%================================================================
+\section{Unit 3: Rigorous Statistical Design}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Develop appropriate study designs for research aims
+    \item Create analytic plans with power analyses
+    \item Identify sources of bias and interpret findings appropriately
+\end{itemize}
+
+\subsection{Activities}
+
+\subsubsection{3.1 Study Design for Projection Analysis}
+Research Aim: Project underweight newborns and infant mortality by Texas county for 2030
+\begin{enumerate}
+    \item Propose a study design that addresses:
+    \begin{itemize}
+        \item Historical trend analysis using NCHS data (1969-1986)
+        \item Integration with SEER population data (1987-2020)
+        \item Projection using SEDAC data (2020-2030)
+    \end{itemize}
+    \item Discuss strengths and weaknesses of your approach
+    \item Identify potential confounders and how to address them
+\end{enumerate}
+
+\subsubsection{3.2 Analytic Plan and Power Analysis}
+\begin{enumerate}
+    \item Develop a detailed analytic plan including:
+    \begin{itemize}
+        \item Time series regression methods for projection
+        \item Handling of missing data and data gaps (1987-present birth records)
+        \item Uncertainty quantification for projections
+    \end{itemize}
+    \item Conduct power analysis for detecting county-level differences
+    \item Calculate sample sizes needed for reliable projections
+\end{enumerate}
+
+\subsubsection{3.3 Bias Assessment and Causal Interpretation}
+\begin{enumerate}
+    \item Identify specific biases in the observational data:
+    \begin{itemize}
+        \item Selection bias in birth recording
+        \item Information bias in weight measurements
+        \item Confounding by socioeconomic factors
+    \end{itemize}
+    \item Produce mock results with confidence intervals
+    \item Write an interpretation addressing limitations
+\end{enumerate}
+
+%================================================================
+\section{Unit 4: Design and Reporting of Predictive Models}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Apply dimension reduction techniques
+    \item Build and evaluate classification models
+    \item Follow TRIPOD guidelines for reporting
+\end{itemize}
+
+\subsection{Activities}
+
+\subsubsection{4.1 Data Preparation and Feature Engineering}
+\begin{enumerate}
+    \item Implement Principal Component Analysis (PCA):
+    [Keep existing PCA implementation from Linear Discriminants section]
+    \item Apply feature selection for predicting underweight births:
+    \begin{itemize}
+        \item Use correlation analysis
+        \item Apply LASSO regularization
+        \item Implement recursive feature elimination
+    \end{itemize}
+    \item Document your choices following TRIPOD guidelines
+\end{enumerate}
+
+\subsubsection{4.2 Predictive Modeling}
+\begin{enumerate}
+    \item Build models to predict:
+    \begin{itemize}
+        \item Birth weight categories (underweight, normal, overweight)
+        \item Risk of infant mortality
+    \end{itemize}
+    \item Compare multiple approaches:
+    \begin{itemize}
+        \item Logistic regression
+        \item Random forests
+        \item Gradient boosting
+    \end{itemize}
+    \item Evaluate using appropriate metrics (AUC, calibration plots)
+    \item Address data leakage concerns
+\end{enumerate}
+
+\subsubsection{4.3 TRIPOD-Compliant Reporting}
+\begin{enumerate}
+    \item Complete the TRIPOD checklist for your predictive model
+    \item Create a model card documenting:
+    \begin{itemize}
+        \item Model purpose and limitations
+        \item Training data characteristics
+        \item Performance metrics by subgroups
+        \item Potential biases and fairness considerations
+    \end{itemize}
+\end{enumerate}
+
+%================================================================
+\section{Unit 5: Reproducible Workflows}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Create reproducible analysis pipelines
+    \item Implement version control and containerization
+    \item Follow best practices for scientific computing
+\end{itemize}
+
+\subsection{Activities}
+
+% \subsubsection{5.1 Setting Up Reproducible Infrastructure}
+% \begin{enumerate}
+%     \item Create project structure:
+%     \begin{verbatim}
+%     vital-statistics-2030/
+%     ├── data/
+%     │   ├── raw/
+%     │   ├── processed/
+%     │   └── metadata/
+%     ├── analysis/
+%     │   ├── notebooks/
+%     │   └── scripts/
+%     ├── results/
+%     ├── docs/
+%     ├── Makefile
+%     ├── requirements.txt
+%     └── README.md
+%     \end{verbatim}
+%     \item Initialize git repository and create .gitignore
+% \end{enumerate}
+
+\subsubsection{5.2 Code Notebooks for Exploratory Analysis}
+\begin{enumerate}
+    \item Create Jupyter notebooks for:
+    \begin{itemize}
+        \item Initial data exploration (EDA)
+        \item Single year analysis (1969 Texas births)
+        \item Time series visualization
+    \end{itemize}
+    \item Use Quarto to create reproducible reports
+    \item Include markdown documentation throughout
+\end{enumerate}
+
+\subsubsection{5.3 Automation and Containerization}
+\begin{enumerate}
+    \item Create a Makefile with targets:
+    \begin{itemize}
+        \item download-data: Fetch NCHS, SEER, SEDAC files
+        \item process-data: Clean and merge datasets
+        \item run-analysis: Execute all analyses
+        \item generate-report: Create final report
+    \end{itemize}
+    \item Build Docker container with all dependencies
+    \item Test full pipeline reproducibility
+\end{enumerate}
+
+%================================================================
+\section{Unit 6: Meta-analysis Integration}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Synthesize findings across multiple data sources
+    \item Account for heterogeneity and dependencies
+    \item Conduct systematic comparisons
+\end{itemize}
+
+\subsection{Activities}
+
+\subsubsection{6.1 Systematic Comparison with Other States}
+\begin{enumerate}
+    \item Conduct meta-analysis of infant mortality across states:
+    \begin{itemize}
+        \item Calculate effect sizes for each state
+        \item Test for heterogeneity (I² statistic)
+        \item Create forest plots
+    \end{itemize}
+    \item Account for correlation between neighboring states
+    \item Identify states with similar patterns to Texas
+\end{enumerate}
+
+\subsubsection{6.2 Integrating Multiple Evidence Sources}
+\begin{enumerate}
+    \item Combine projections from:
+    \begin{itemize}
+        \item Your time series model
+        \item SEDAC population projections
+        \item Published literature on infant mortality trends
+    \end{itemize}
+    \item Weight evidence by quality and relevance
+    \item Produce ensemble projections with uncertainty
+\end{enumerate}
+
+%================================================================
+\section{Unit 7: Transformer-based AI Applications}
+%================================================================
+
+\subsection{Learning Objectives}
+\begin{itemize}
+    \item Apply LLMs to assist in data analysis
+    \item Create consensus-based analytical approaches
+    \item Develop AI-augmented analysis pipelines
+\end{itemize}
+
+\subsection{Activities}
+
+\subsubsection{7.1 LLM-Assisted Code Generation}
+\begin{enumerate}
+    \item Use LLMs to generate code for:
+    \begin{itemize}
+        \item Data cleaning and validation scripts
+        \item Statistical analysis functions
+        \item Visualization templates
+    \end{itemize}
+    \item Validate generated code against test cases
+    \item Document prompts that produced best results
+\end{enumerate}
+
+\subsubsection{7.2 Consensus Analysis Framework}
+\begin{enumerate}
+    \item Query multiple LLMs about:
+    \begin{itemize}
+        \item Interpretation of unusual patterns in data
+        \item Selection of appropriate statistical methods
+        \item Identification of potential confounders
+    \end{itemize}
+    \item Aggregate responses using consensus methods
+    \item Compare LLM suggestions with traditional approaches
+\end{enumerate}
+
+\subsubsection{7.3 Automated Report Generation}
+\begin{enumerate}
+    \item Create pipeline using LLMs to:
+    \begin{itemize}
+        \item Summarize findings for executive summary
+        \item Generate plain-language explanations of methods
+        \item Produce policy recommendations
+    \end{itemize}
+    \item Review and validate AI-generated content
+    \item Ensure ethical use and proper attribution
+\end{enumerate}
+
+%================================================================
+\section{Integration Exercise: Complete Analysis Pipeline}
+%================================================================
+
+\subsection{Comprehensive Project Requirements}
+Integrate all units to produce the final deliverable for the planning commission:
+
+\begin{enumerate}
+    \item \textbf{Executive Report} (3-5 pages):
+    \begin{itemize}
+        \item County-level projections for 2030
+        \item Key socioeconomic factors identified
+        \item Comparison with other states
+        \item Policy recommendations
+    \end{itemize}
+    
+    \item \textbf{Technical Appendix} (unlimited):
+    \begin{itemize}
+        \item Complete methodology
+        \item Reproducible code and workflows
+        \item Validation results
+        \item Uncertainty quantification
+        \item Ethical considerations
+        \item Data management plan
+    \end{itemize}
+    
+    \item \textbf{Reproducibility Package}:
+    \begin{itemize}
+        \item GitHub repository with version control
+        \item Docker container
+        \item Automated pipeline (Makefile)
+        \item Complete documentation
+    \end{itemize}
+\end{enumerate}
+
+
+
+\end{document}
+
+ 
